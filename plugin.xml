@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+      <run class="com.redhat.importer.Application">
+      </run>
+      </application>
+   </extension>
+   <extension
+   id="headless"
+         point="org.eclipse.core.runtime.products">
+         <product
+            application="com.redhat.importer.Application"
+            name="Headless Example">
+         <property
+               name="appName"
+               value="Headless Example">
+         </property>
+      </product>
+   </extension>
+
+</plugin>
