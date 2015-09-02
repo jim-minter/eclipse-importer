@@ -18,42 +18,46 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
 public class Application implements IStartup {
+	void add(IProgressMonitor pm, String name, String location) throws Exception {
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		IProject project = root.getProject(name);
+		IProjectDescription desc = ResourcesPlugin.getWorkspace().newProjectDescription(name);
+		desc.setLocationURI(new URI("file://" + location));
+		project.create(desc, pm);
+		project.open(pm);
+
+		ResolverConfiguration rc = new ResolverConfiguration();
+		rc.setResolveWorkspaceProjects(false);
+		IProjectConfigurationManager pcm = MavenPlugin.getProjectConfigurationManager();
+		pcm.enableMavenNature(project, rc, pm);
+
+		project.build(IncrementalProjectBuilder.FULL_BUILD, pm);
+
+		ConnectProviderOperation op = new ConnectProviderOperation(project);
+		op.execute(pm);
+	}
+
 	public void earlyStartup() {
+		String[] args = Platform.getApplicationArgs();
+
 		try {
-			String[] args = Platform.getApplicationArgs();
-
-			IProgressMonitor pm = new ProgressMonitor();
-
-			IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-			IProject project = root.getProject(args[0]);
-			IProjectDescription desc = ResourcesPlugin.getWorkspace()
-					.newProjectDescription(args[0]);
-			desc.setLocationURI(new URI("file://" + args[1]));
-			project.create(desc, pm);
-			project.open(pm);
-
-			ResolverConfiguration rc = new ResolverConfiguration();
-			rc.setResolveWorkspaceProjects(false);
-			IProjectConfigurationManager pcm = MavenPlugin
-					.getProjectConfigurationManager();
-			pcm.enableMavenNature(project, rc, pm);
-
-			project.build(IncrementalProjectBuilder.FULL_BUILD, pm);
-
-			ConnectProviderOperation op = new ConnectProviderOperation(project);
-			op.execute(pm);
+			for(int i = 0; i < args.length; i+=2) {
+				IProgressMonitor pm = new ProgressMonitor();
+				add(pm, args[i], args[i + 1]);
+			}
 
 			System.out.println("Done.");
 
-			final IWorkbench workbench = PlatformUI.getWorkbench();
-			workbench.getDisplay().asyncExec(new Runnable() {
-				public void run() {
-					workbench.close();
-				}
-			});
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
+		
+		final IWorkbench workbench = PlatformUI.getWorkbench();
+		workbench.getDisplay().asyncExec(new Runnable() {
+			public void run() {
+				workbench.close();
+			}
+		});
 	}
 }
