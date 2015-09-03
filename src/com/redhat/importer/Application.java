@@ -11,6 +11,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.egit.core.op.ConnectProviderOperation;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IProjectConfigurationManager;
@@ -52,19 +53,42 @@ public class Application implements IStartup {
 		IProgressMonitor pm = new ProgressMonitor();
 
 		try {
+			Config.writeEclipseConfig();
+
 			for(int i = 0; i < args.length; i += 2) {
 				add(pm, args[i], args[i + 1]);
 			}
 
 			ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.FULL_BUILD, pm);
-			// Config.writeEclipseConfig();
-
-			System.out.println("Done.");
 
 		} catch(Exception e) {
 			System.out.println(e);
 		}
-		
-		closeEclipse();
+
+		new Thread(new Runnable() {
+			public void run() {
+				int counter = 0;
+				int jobs = 0;
+
+				while(counter < 5) {
+					int jobs2 = Job.getJobManager().find(null).length;
+					System.out.println(Integer.toString(jobs2) + " jobs outstanding.");
+					if (jobs == jobs2)
+						counter++;
+					else {
+						jobs = jobs2;
+						counter = 0;
+					}
+
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						System.out.println(e);
+					}
+				}
+
+				closeEclipse();
+			}
+		}).start();
 	}
 }
