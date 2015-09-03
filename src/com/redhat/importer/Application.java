@@ -57,7 +57,7 @@ public class Application implements IStartup {
 			}
 
 			ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.FULL_BUILD, pm);
-			Config.writeEclipseConfig();
+			// Config.writeEclipseConfig();
 
 			System.out.println("Done.");
 
