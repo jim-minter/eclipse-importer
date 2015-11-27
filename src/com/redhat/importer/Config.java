@@ -25,5 +25,11 @@ class Config {
 		node = InstanceScope.INSTANCE.getNode("org.eclipse.egit.ui");
 		node.putBoolean("show_initial_config_dialog", false);
 		node.flush();
+
+		node = InstanceScope.INSTANCE.getNode("org.jboss.tools.openshift.core");
+		node.put("org.jboss.tools.openshift.core.connection.auth.https://demo@openshift.example.com:8443", "Basic");
+		node.put("openshift.cli.location", "/usr/bin/oc");
+		node.put("org.jboss.tools.openshift.core.connection.CONNECTION_NAMES", "https://demo@openshift.example.com:8443");
+		node.flush();
 	}
 }
